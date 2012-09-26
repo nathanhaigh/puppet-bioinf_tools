@@ -1,4 +1,4 @@
-puppet_bioinf_tools
-===================
+bioinf_tools
+============
 
 Puppetised Bioinformatics Tools
