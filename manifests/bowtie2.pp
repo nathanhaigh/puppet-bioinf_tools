@@ -5,12 +5,12 @@ class bioinf_tools::bowtie2 ( $version  = '2.0.0-beta7', $toolname = "bowtie2" )
   #only need to run curl if
   get { "${toolname}-${version}-get":
     source => $url,
-    target => "$bioinf_tools::staging_dir/bowtie2-${version}-linux-x86_64.zip",
+    target => "bowtie2-${version}-linux-x86_64.zip",
   }
-  exec { "${toolname}-${version}-unpack":
-    command => "unzip bowtie2-${version}-linux-x86_64.zip",
-    require => [ Package['unzip'], Get["${toolname}-${version}-get"] ],
-    creates => "$bioinf_tools::staging_dir/bowtie2-2.0.0-beta7",
+  extract { "${toolname}-${version}-extract":
+    source  => "bowtie2-${version}-linux-x86_64.zip",
+    creates => "bowtie2-2.0.0-beta7",
+    require => Get["${toolname}-${version}-get"],
   }
   file { "$bioinf_tools::target_dir/$toolname":
     ensure => directory,
@@ -18,7 +18,7 @@ class bioinf_tools::bowtie2 ( $version  = '2.0.0-beta7', $toolname = "bowtie2" )
   exec { "${toolname}-${version}-move":
     command => "mv $bioinf_tools::staging_dir/bowtie2-2.0.0-beta7 $bioinf_tools::target_dir/$toolname/${toolname}-${version}",
     creates => "$bioinf_tools::target_dir/$toolname/${toolname}-${version}",
-    require => [ Exec["${toolname}-${version}-unpack"], File["$bioinf_tools::target_dir/$toolname"] ],
+    require => [ Exec["${toolname}-${version}-extract"], File["$bioinf_tools::target_dir/$toolname"] ],
   }
   file { "$bioinf_tools::target_dir/$toolname/$toolname":
     ensure => link,
