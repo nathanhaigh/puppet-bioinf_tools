@@ -93,7 +93,7 @@ class bioinf_tools (
       }
     }
     exec { $command:
-      creates => $::staging_dir/$target,
+      creates => "$bioinf_tools::staging_dir/$target",
     }
   }
   
@@ -150,7 +150,7 @@ class bioinf_tools (
     
     # delete the $source if $cleanup is true and extraction was successful
     if ($cleanup) {
-      file { $source:
+      file { "$bioinf_tools::staging_dir/$source":
 	      ensure  => absent,
 	      require => Exec["$command"],
 	    }

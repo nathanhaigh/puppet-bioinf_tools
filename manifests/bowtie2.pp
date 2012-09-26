@@ -18,15 +18,12 @@ class bioinf_tools::bowtie2 ( $version  = '2.0.0-beta7', $toolname = "bowtie2" )
   exec { "${toolname}-${version}-move":
     command => "mv $bioinf_tools::staging_dir/bowtie2-2.0.0-beta7 $bioinf_tools::target_dir/$toolname/${toolname}-${version}",
     creates => "$bioinf_tools::target_dir/$toolname/${toolname}-${version}",
-    require => [ Exec["${toolname}-${version}-extract"], File["$bioinf_tools::target_dir/$toolname"] ],
+    require => [ Extract["${toolname}-${version}-extract"], File["$bioinf_tools::target_dir/$toolname"] ],
   }
   file { "$bioinf_tools::target_dir/$toolname/$toolname":
     ensure => link,
     target => "${toolname}-${version}",
     require => Exec["${toolname}-${version}-move"],
-  }
-  package { 'unzip':
-    ensure => installed,
   }
   # need to add $tools::target_dir/$toolname/$toolname to $PATH
 }
