@@ -1,6 +1,6 @@
-# Class: bioinf_tools
+# Class: puppet_bioinf_tools
 #
-# This module manages bioinf_tools
+# This module manages puppet_bioinf_tools
 #
 # Parameters: none
 #
@@ -10,7 +10,7 @@
 #
 # Sample Usage:
 #
-class bioinf_tools (
+class puppet_bioinf_tools (
   $staging_dir = '/usr/local/src',
   $target_dir = '/usr/local/bioinf',
 ) {
@@ -21,7 +21,8 @@ class bioinf_tools (
     ],
     cwd => $staging_dir,
   }
-  # TODO: these file resources do not recursively ensure ALL parent dirs are present, i.e. the immediate parent MUST exist. 
+  # TODO: these file resources do not recursively ensure ALL parent dirs are present,
+  # i.e. the immediate parent MUST exist. 
   file { "$staging_dir":
     ensure => directory,
   }
@@ -30,9 +31,9 @@ class bioinf_tools (
   }
 
   # define a resource - these can be called multiple times unlike class
-  #  'get' knows how to retrieve files given a $source and saves it to $target
-  #  can provide username, password, environment etc for those protocols that need them e.g. https, ftp
-  # the file obtained from $source will be placed in $bioinf_tools::staging 
+  # 'get' knows how to retrieve files given a $source and saves it to $target
+  # can provide username, password, environment etc for those protocols that need them e.g. https, ftp
+  # the file obtained from $source will be placed in $puppet_bioinf_tools::staging 
   define get (
     $source,
     $target,
@@ -44,29 +45,29 @@ class bioinf_tools (
     # TODO: make $target optional, and default to $staging_dir/basename($source)
     case $source {
       /^http:\/\//: {
-        $command = "curl -L --create-dirs -o $bioinf_tools::staging_dir/$target $source"
+        $command = "curl -L --create-dirs -o $puppet_bioinf_tools::staging_dir/$target $source"
       }
       /^https:\/\//: {
         if $username {
-          $command = "curl -L --create-dirs -o $bioinf_tools::staging_dir/$target -u $username:$password $source"
+          $command = "curl -L --create-dirs -o $puppet_bioinf_tools::staging_dir/$target -u $username:$password $source"
         } elsif $certificate {
-          $command = "curl -L --create-dirs -o $bioinf_tools::staging_dir/$target -E $certificate:$password $source"
+          $command = "curl -L --create-dirs -o $puppet_bioinf_tools::staging_dir/$target -E $certificate:$password $source"
         } else {
-          $command = "curl -L --create-dirs -o $bioinf_tools::staging_dir/$target $source"
+          $command = "curl -L --create-dirs -o $puppet_bioinf_tools::staging_dir/$target $source"
         }
       }
       /^ftp:\/\//: {
         if $username {
-          $command = "curl --create-dirs -o $bioinf_tools::staging_dir/$target -u $username:$password $source"
+          $command = "curl --create-dirs -o $puppet_bioinf_tools::staging_dir/$target -u $username:$password $source"
         } else {
-          $command = "curl --create-dirs -o $bioinf_tools::staging_dir/$target $source"
+          $command = "curl --create-dirs -o $puppet_bioinf_tools::staging_dir/$target $source"
         }
       }
       /^git:\/\//: {
         $command = "git clone $source"
       }
       default: {
-        fail("bioinf_tools::get: unsupported protocol ${source}.")
+        fail("puppet_bioinf_tools::get: unsupported protocol ${source}.")
       }
     }
 
@@ -93,13 +94,13 @@ class bioinf_tools (
       }
     }
     exec { $command:
-      creates => "$bioinf_tools::staging_dir/$target",
+      creates => "$puppet_bioinf_tools::staging_dir/$target",
     }
   }
   
   # define a resource - these can be called multiple times unlike class
-  #  'extract' knows how to extract archives given a $source
-  # The $source is assumed to be in $bioinf_tools::staging and will be extracted there
+  # 'extract' knows how to extract archives given a $source
+  # The $source is assumed to be in $puppet_bioinf_tools::staging and will be extracted there
   # If $cleanup is true, delete the source if extraction is successful
   define extract (
     $source,
@@ -109,22 +110,22 @@ class bioinf_tools (
     # Build the command required to extract the archive based on the file extension
 	  case $source {
 	    /.tar$/: {
-	      $command = "tar -xf $bioinf_tools::staging_dir/${source}"
+	      $command = "tar -xf $puppet_bioinf_tools::staging_dir/${source}"
 	    }
 	
 	    /(.tgz|.tar.gz)$/: {
-	      $command = "tar -xzf $bioinf_tools::staging_dir/${source}"
+	      $command = "tar -xzf $puppet_bioinf_tools::staging_dir/${source}"
 	    }
 	    
 	    /.tar.bz2$/: {
-	      $command = "tar -xjf $bioinf_tools::staging_dir/${source}"
+	      $command = "tar -xjf $puppet_bioinf_tools::staging_dir/${source}"
 	    }
 	
 	    /.zip$/: {
-	      $command = "unzip $bioinf_tools::staging_dir/${source}"
+	      $command = "unzip $puppet_bioinf_tools::staging_dir/${source}"
 	    }
 	    default: {
-	      fail("bioinf_tools::::extract: unsupported file format ${source}.")
+	      fail("puppet_bioinf_tools::::extract: unsupported file format ${source}.")
 	    }
 	  }
 	  
@@ -134,25 +135,28 @@ class bioinf_tools (
       /^tar/: {
         package { "tar":
           ensure => installed,
-          before => Exec["$command"],
+          before => Exec["extract-command"],
         }
       }
       /^unzip/: {
         package { "unzip":
           ensure => installed,
-          before => Exec["$command"],
+          before => Exec["extract-command"],
         }
       }
     }
-    exec { $command:
-      creates => "$bioinf_tools::staging_dir/$creates",
+
+    exec { "extract-command":
+      command => $command,
+      creates => "$puppet_bioinf_tools::staging_dir/$creates",
     }
     
     # delete the $source if $cleanup is true and extraction was successful
     if ($cleanup) {
-      file { "$bioinf_tools::staging_dir/$source":
+      file { "$puppet_bioinf_tools::staging_dir/${source}":
 	      ensure  => absent,
-	      require => Exec["$command"],
+	      require => Exec["extract-command"],
+        backup  => false
 	    }
     }
   }
