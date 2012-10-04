@@ -108,30 +108,30 @@ class bioinf_tools (
     $cleanup = true,
   ) {
     # Build the command required to extract the archive based on the file extension
-	  case $source {
-	    /.tar$/: {
-	      $command = "tar -xf $bioinf_tools::staging_dir/${source}"
-	    }
-	
-	    /(.tgz|.tar.gz)$/: {
-	      $command = "tar -xzf $bioinf_tools::staging_dir/${source}"
-	    }
-	    
-	    /.tar.bz2$/: {
-	      $command = "tar -xjf $bioinf_tools::staging_dir/${source}"
-	    }
-	
-	    /.zip$/: {
-	      $command = "unzip $bioinf_tools::staging_dir/${source}"
-	    }
-	    default: {
-	      fail("bioinf_tools::::extract: unsupported file format ${source}.")
-	    }
-	  }
-	  
-	  # Determine if the command needs a package to be installed in order to run.
+    case $source {
+      /.tar$/: {
+        $command = "tar -xf $bioinf_tools::staging_dir/${source}"
+      }
+  
+      /(.tgz|.tar.gz)$/: {
+        $command = "tar -xzf $bioinf_tools::staging_dir/${source}"
+      }
+      
+      /.tar.bz2$/: {
+        $command = "tar -xjf $bioinf_tools::staging_dir/${source}"
+      }
+  
+      /.zip$/: {
+        $command = "unzip $bioinf_tools::staging_dir/${source}"
+      }
+      default: {
+        fail("bioinf_tools::::extract: unsupported file format ${source}.")
+      }
+    }
+    
+    # Determine if the command needs a package to be installed in order to run.
     # The default will be no such requirements
-	  case $command {
+    case $command {
       /^tar/: {
         package { "tar":
           ensure => installed,
@@ -154,10 +154,10 @@ class bioinf_tools (
     # delete the $source if $cleanup is true and extraction was successful
     if ($cleanup) {
       file { "$bioinf_tools::staging_dir/${source}":
-	      ensure  => absent,
-	      require => Exec["extract-command"],
+        ensure  => absent,
+        require => Exec["extract-command"],
         backup  => false
-	    }
+      }
     }
   }
 }
