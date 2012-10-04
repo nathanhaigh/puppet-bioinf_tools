@@ -1,1 +1,1 @@
-include puppet_bioinf_tools
+include bioinf_tools

@@ -1,6 +1,6 @@
-class puppet_bioinf_tools::bowtie2 (
+class bioinf_tools::bowtie2 (
 	$version  = '2.0.0-beta7',
-  $toolname = "bowtie2" ) inherits puppet_bioinf_tools
+  $toolname = "bowtie2" ) inherits bioinf_tools
 {
   # Tool URL.
   $url = "http://downloads.sourceforge.net/project/bowtie-bio/bowtie2/${version}/bowtie2-${version}-linux-x86_64.zip"
@@ -19,19 +19,19 @@ class puppet_bioinf_tools::bowtie2 (
   }
 
   # Tool target directory.
-  file { "$puppet_bioinf_tools::target_dir/$toolname":
+  file { "$bioinf_tools::target_dir/$toolname":
     ensure => directory,
   }
 
   # Move extracted files into target directory.
   exec { "${toolname}-${version}-move":
-    command => "mv $puppet_bioinf_tools::staging_dir/bowtie2-${version} $puppet_bioinf_tools::target_dir/$toolname/${toolname}-${version}",
-    creates => "$puppet_bioinf_tools::target_dir/$toolname/${toolname}-${version}",
-    require => [ Extract["${toolname}-${version}-extract"], File["$puppet_bioinf_tools::target_dir/$toolname"] ],
+    command => "mv $bioinf_tools::staging_dir/bowtie2-${version} $bioinf_tools::target_dir/$toolname/${toolname}-${version}",
+    creates => "$bioinf_tools::target_dir/$toolname/${toolname}-${version}",
+    require => [ Extract["${toolname}-${version}-extract"], File["$bioinf_tools::target_dir/$toolname"] ],
   }
 
   # Create default symlink for tool.
-  file { "$puppet_bioinf_tools::target_dir/$toolname/$toolname":
+  file { "$bioinf_tools::target_dir/$toolname/$toolname":
     ensure  => link,
     target  => "${toolname}-${version}",
     require => Exec["${toolname}-${version}-move"],
@@ -43,7 +43,7 @@ class puppet_bioinf_tools::bowtie2 (
     owner   => 'root',
     group   => 'root',
     mode    => '0755',
-    content => "export PATH=$puppet_bioinf_tools::target_dir/$toolname/$toolname:\$PATH",
-    require => File["$puppet_bioinf_tools::target_dir/$toolname/$toolname"],
+    content => "export PATH=$bioinf_tools::target_dir/$toolname/$toolname:\$PATH",
+    require => File["$bioinf_tools::target_dir/$toolname/$toolname"],
   }
 }
