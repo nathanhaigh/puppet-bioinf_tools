@@ -1,21 +1,25 @@
 class bioinf_tools::bowtie2 (
-  $version  = '2.0.0-beta7',
-  $toolname = "bowtie2" ) inherits bioinf_tools
-{
-  # Tool URL.
+	$version  = '2.0.0-beta7',
+  $toolname = "bowtie2" )
+  {
+  include bioinf_tools
+
+  # Tool URL and variables.
   $url = "http://downloads.sourceforge.net/project/bowtie-bio/bowtie2/${version}/bowtie2-${version}-linux-x86_64.zip"
-  
+  $tool_target = "bowtie2-${version}-linux-x86_64.zip"
+  $tool_create = "bowtie2-${version}"
+
   # Pull down tool.
-  get { "${toolname}-${version}-get":
+  bioinf_tools::get { "${toolname}-${version}-get":
     source => $url,
-    target => "bowtie2-${version}-linux-x86_64.zip",
+    target => $tool_target,
   }
 
   # Extract the tool into staging directory.
-  extract { "${toolname}-${version}-extract":
-    source  => "bowtie2-${version}-linux-x86_64.zip",
-    creates => "bowtie2-${version}",
-    require => Get["${toolname}-${version}-get"],
+  bioinf_tools::extract { "${toolname}-${version}-extract":
+    source  => $tool_target,
+    creates => $tool_create,
+    require => Bioinf_tools::Get["${toolname}-${version}-get"],
   }
 
   # Tool target directory.
@@ -25,7 +29,7 @@ class bioinf_tools::bowtie2 (
 
   # Move extracted files into target directory.
   exec { "${toolname}-${version}-move":
-    command => "mv $bioinf_tools::staging_dir/bowtie2-${version} $bioinf_tools::target_dir/$toolname/${toolname}-${version}",
+    command => "mv $bioinf_tools::staging_dir/$tool_create $bioinf_tools::target_dir/$toolname/${toolname}-${version}",
     creates => "$bioinf_tools::target_dir/$toolname/${toolname}-${version}",
     require => [ Extract["${toolname}-${version}-extract"], File["$bioinf_tools::target_dir/$toolname"] ],
   }
